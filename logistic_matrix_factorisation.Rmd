@@ -1,0 +1,41 @@
+---
+title: "review of Logistic matrix factorisation for Implicit feedback data"
+author: Sean Violante (original author Christopher C Johnson @ spotify)
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+$U = (u_1,\dots, u_n)$
+$I = (i_1,\dots, i_m)$
+$R = (R_{ui})_{n\times m},\ \mathbb R_{\ge 0}$
+
+$$p(l_{ui} | x_u, y_i, \beta_u, \beta_i) = \frac{\exp(x_u y_i^T+\beta_u+\beta_i)}{1 + \exp(x_u y_i^T +\beta_u+\beta_i)}
+$$
+
+$\beta_u$ is a user bias - how likely to play new music?
+$\beta_i$ is a item bias - how likely new user to play music?
+
+Define confidence in entries, as $c=\alpha r_{ui}$, can also use $c=1 + \alpha log(1+r_{ui})$ to damp down power users. Treat each zero observation as single observation of negative observation and $r_{ui}$ be c positive classes.
+
+
+Make assumption that all entries are conditionally independent:
+$$ \mathsf L (R|X,Y,\beta) =\prod_{u,i}p(l_{ui} | x_u, y_i, \beta_u, \beta_i)^{\alpha r_{ui}}(1-p(l_{ui} | x_u, y_i, \beta_u, \beta_i))$$
+
+SEAN: This seems wrong, but irrelevant? (on assumption $c \gg 1$). case $r_{ui}=0$ correct, but case $r_{ui}\ne 0$ should not have negative instance case.
+$$ \mathcal L (R|X,Y,\beta) =\prod_{u,i}p(l_{ui} | x_u, y_i, \beta_u, \beta_i)^{\alpha r_{ui}}(1-p(l_{ui} | x_u, y_i, \beta_u, \beta_i))$$
+
+$$ \log p (X,Y,\beta |R) =\sum_{u,i} \alpha r_{ui} (x_u y_i^T + \beta_u + \beta_i) 
+- (1 + \alpha r_{ui}) \log(1 + \exp(x_u y_i^T +\beta_u+\beta_i)) -\frac{\lambda}{2}\|x_u\|^2 - \frac{\lambda}{2}\|y_i\|^2$$
+
+should rather be
+$$ \log p (X,Y,\beta |R) =\sum_{u,i}  - \alpha r_{ui} \log(1 + \exp( - (x_u y_i^T +\beta_u+\beta_i))
+- \mathbb{1}_{r_{ui}=0} \log(1 + \exp(  (x_u y_i^T +\beta_u+\beta_i)) 
+-\frac{\lambda}{2}\|x_u\|^2 - \frac{\lambda}{2}\|y_i\|^2$$
+
+Alternate Gradient ascent for user vectors and biases, then item vectors and biases
+
+Each iteration linear in users and items
